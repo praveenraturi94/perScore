@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	pb "perScore/perScoreProto/question"
 
@@ -21,6 +22,15 @@ import (
 // 	Parent      int32  `json:"parent"`
 // 	Level       int32  `json:"level"`
 // }
+
+// Category ...
+type Category struct {
+	Name       string
+	Parent     uint
+	Level      int32
+	Approved   bool
+	Categories []Category
+}
 
 // CreateQuestion ...
 func CreateQuestion(body []byte) (*pb.CreateQuestionResponse, error) {
@@ -52,7 +62,7 @@ func CreateQuestion(body []byte) (*pb.CreateQuestionResponse, error) {
 	// fmt.Println("newCategories ", newCategories)
 	// ques.Categories = newCategories
 	ques.AuthToken = GetToken("praveenraturi3@yahoo.com")
-	conn, err := grpc.Dial("localhost:6060", grpc.WithInsecure())
+	conn, err := grpc.Dial("Vikram-Anand.local:6060", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Failed to dial gRPC connection: %v", err)
 	}
@@ -61,6 +71,45 @@ func CreateQuestion(body []byte) (*pb.CreateQuestionResponse, error) {
 	questionClientConnection := pb.NewQuestionClient(conn)
 
 	response, err := questionClientConnection.CreateQuestion(ctx, ques)
-
+	Sorting(response)
 	return response, err
+}
+
+var categ = new(pb.CreateQuestionRequest_Category)
+
+// Sorting ...
+func Sorting(categories *pb.CreateQuestionResponse) {
+	fmt.Println("1")
+	for i, category := range categories.Categories {
+		level := category.GetLevel()
+		// parent := category.Parent
+		if level == 1 {
+			var categorey = new(pb.CreateQuestionRequest_Category)
+			categorey.Id = category.GetId()
+			categorey.Name = category.GetName()
+			categorey.Parent = category.GetParent()
+			categ.Categories = append(categ.Categories, categorey)
+			categories.Categories = append(categories.Categories[:i], categories.Categories[i+1:]...)
+		}
+	}
+	fmt.Println("2")
+	fmt.Println("categ", categ)
+	for {
+		for i, category := range categories.Categories {
+			for _, cate := range categ.Categories {
+				if category.GetParent() == cate.GetId() {
+					var categorey *pb.CreateQuestionRequest_Category
+					categorey.Id = category.GetId()
+					categorey.Name = category.GetName()
+					categorey.Parent = category.GetParent()
+					cate.Categories = append(cate.Categories, categorey)
+					categories.Categories = append(categories.Categories[:i], categories.Categories[i+1:]...)
+				}
+			}
+		}
+		if len(categories.Categories) == 0 {
+			break
+		}
+	}
+	fmt.Println(categ)
 }

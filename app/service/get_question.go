@@ -12,7 +12,7 @@ import (
 // GetQuestion ...
 func GetQuestion(body []byte) (*question.GetQuestionResponse, error) {
 	ctx := context.Background()
-	conn, err := grpc.Dial("localhost:6060", grpc.WithInsecure())
+	conn, err := grpc.Dial("Vikram-Anand.local:6060", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Failed to dial gRPC connection: %v", err)
 	}
