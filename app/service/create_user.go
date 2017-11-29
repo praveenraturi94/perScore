@@ -15,7 +15,7 @@ func CreateUser(body []byte) (*user.CreateUserResponse, error) {
 
 	ctx := context.Background()
 
-	conn, err := grpc.Dial("Vikram-Anand.local:6040", grpc.WithInsecure())
+	conn, err := grpc.Dial("192.168.100.88:6060", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Failed to dial gRPC connection: %v", err)
 	}

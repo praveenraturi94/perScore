@@ -23,8 +23,10 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	// if err != nil {
 	// 	fmt.Fprintln(w, err)
 	// }
-	token := service.Login(body)
-	fmt.Println(token)
+	token, err := service.Login(body)
+	if err != nil {
+		fmt.Fprintln(w, "Error while logging in = ", err)
+	}
 	fmt.Fprintln(w, "response is = ", token)
 	//post request with json in body using struct
 	// var s = new(&Person)

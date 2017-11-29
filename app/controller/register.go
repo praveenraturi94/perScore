@@ -21,7 +21,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 	resp, err := service.CreateUser([]byte(body))
 	if err != nil {
-		fmt.Fprintln(w, err)
+		fmt.Fprintln(w, "Error creating users = ", err)
 	}
 	b, err := json.Marshal(resp)
 	if err != nil {

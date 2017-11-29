@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	pb "perScore/perScoreProto/question"
 
@@ -24,7 +23,7 @@ import (
 // }
 
 // CreateQuestion ...
-func CreateQuestion(body []byte) *pb.CreateQuestionResponse {
+func CreateQuestion(body []byte) (*pb.CreateQuestionResponse, error) {
 
 	ctx := context.Background()
 
@@ -53,8 +52,7 @@ func CreateQuestion(body []byte) *pb.CreateQuestionResponse {
 	// fmt.Println("newCategories ", newCategories)
 	// ques.Categories = newCategories
 	ques.AuthToken = GetToken("praveenraturi3@yahoo.com")
-	fmt.Println("question", ques)
-	conn, err := grpc.Dial("Vikram-Anand.local:6060", grpc.WithInsecure())
+	conn, err := grpc.Dial("localhost:6060", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Failed to dial gRPC connection: %v", err)
 	}
@@ -63,8 +61,6 @@ func CreateQuestion(body []byte) *pb.CreateQuestionResponse {
 	questionClientConnection := pb.NewQuestionClient(conn)
 
 	response, err := questionClientConnection.CreateQuestion(ctx, ques)
-	if err != nil {
-		log.Fatal("unable to fetch questions", err)
-	}
-	return response
+
+	return response, err
 }

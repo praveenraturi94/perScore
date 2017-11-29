@@ -18,12 +18,12 @@ import (
 )
 
 // Login ...
-func Login(body []byte) string {
+func Login(body []byte) (string, error) {
 	const key = "fkzfgk0FY2CaYJhyXbshnPJaRrFtCwfj"
 	userDetails := new(user.GetSessionRequest)
 	json.Unmarshal([]byte(body), userDetails)
 	fmt.Println("userDetails", userDetails)
-	conn, err := grpc.Dial("Vikram-Anand.local:6040", grpc.WithInsecure())
+	conn, err := grpc.Dial("192.168.100.88:6060", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Failed to dial gRPC connection: %v", err)
 	}
@@ -34,13 +34,10 @@ func Login(body []byte) string {
 	loginUserClientConnection := user.NewUserClient(conn)
 	fmt.Println(loginUserClientConnection)
 	response, err := loginUserClientConnection.GetSession(ctx, userDetails)
-	if err != nil {
-		log.Fatal("unable to create user ", err)
-	}
 	fmt.Println(response)
 	token := Decrypt([]byte(key), response.Token)
 	saveToken(token, response.Token)
-	return token
+	return token, err
 }
 
 func saveToken(token string, uid string) {

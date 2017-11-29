@@ -16,8 +16,11 @@ func GetQues(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error reading request body",
 			http.StatusInternalServerError)
 	}
-
-	b, err := json.Marshal(service.GetQuestion(body))
+	response, err := service.GetQuestion(body)
+	if err != nil {
+		fmt.Fprintln(w, "Error while fetching questions", err)
+	}
+	b, err := json.Marshal(response)
 	if err != nil {
 		fmt.Println(err)
 		return
