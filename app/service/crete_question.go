@@ -76,11 +76,13 @@ func CreateQuestion(body []byte) (*pb.CreateQuestionResponse, error) {
 }
 
 var categ = new(pb.CreateQuestionRequest_Category)
+var cateTemp = new(pb.CreateQuestionResponse_Category)
 
 // Sorting ...
-func Sorting(categories *pb.CreateQuestionResponse) {
+func Sorting(response *pb.CreateQuestionResponse) {
 	fmt.Println("1")
-	for i, category := range categories.Categories {
+	categories := response.Categories
+	for _, category := range categories {
 		level := category.GetLevel()
 		// parent := category.Parent
 		if level == 1 {
@@ -89,13 +91,12 @@ func Sorting(categories *pb.CreateQuestionResponse) {
 			categorey.Name = category.GetName()
 			categorey.Parent = category.GetParent()
 			categ.Categories = append(categ.Categories, categorey)
-			categories.Categories = append(categories.Categories[:i], categories.Categories[i+1:]...)
 		}
 	}
 	fmt.Println("2")
 	fmt.Println("categ", categ)
 	for {
-		for i, category := range categories.Categories {
+		for _, category := range categories {
 			for _, cate := range categ.Categories {
 				if category.GetParent() == cate.GetId() {
 					var categorey *pb.CreateQuestionRequest_Category
@@ -103,7 +104,8 @@ func Sorting(categories *pb.CreateQuestionResponse) {
 					categorey.Name = category.GetName()
 					categorey.Parent = category.GetParent()
 					cate.Categories = append(cate.Categories, categorey)
-					categories.Categories = append(categories.Categories[:i], categories.Categories[i+1:]...)
+					// categories.Categories = append(categories.Categories[:i], categories.Categories[i+1:]...)
+					// cateTemp = append(cateTemp, categories)
 				}
 			}
 		}
