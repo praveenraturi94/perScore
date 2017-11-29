@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"perScore/app/model"
 	"perScore/perScoreProto/user"
 	"strconv"
@@ -18,12 +19,11 @@ import (
 )
 
 // Login ...
-func Login(body []byte) string {
-	const key = "fkzfgk0FY2CaYJhyXbshnPJaRrFtCwfj"
+func Login(body []byte) (*user.GetSessionResponse, error) {
 	userDetails := new(user.GetSessionRequest)
 	json.Unmarshal([]byte(body), userDetails)
 	fmt.Println("userDetails", userDetails)
-	conn, err := grpc.Dial("Vikram-Anand.local:6040", grpc.WithInsecure())
+	conn, err := grpc.Dial(os.Getenv("PER_SCORE_AUTH_SERVICE_DIAL"), grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Failed to dial gRPC connection: %v", err)
 	}
@@ -34,13 +34,10 @@ func Login(body []byte) string {
 	loginUserClientConnection := user.NewUserClient(conn)
 	fmt.Println(loginUserClientConnection)
 	response, err := loginUserClientConnection.GetSession(ctx, userDetails)
-	if err != nil {
-		log.Fatal("unable to create user ", err)
-	}
 	fmt.Println(response)
-	token := Decrypt([]byte(key), response.Token)
+	token := Decrypt([]byte(os.Getenv("DECRYPT_KEY")), response.Token)
 	saveToken(token, response.Token)
-	return token
+	return response, err
 }
 
 func saveToken(token string, uid string) {

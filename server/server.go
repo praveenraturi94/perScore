@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"perScore/app/routes"
 )
 
@@ -10,5 +11,5 @@ import (
 func Startserver() {
 	fmt.Println("server started")
 	routes.Router()
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(os.Getenv("PORT"), nil)
 }

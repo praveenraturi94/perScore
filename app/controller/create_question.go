@@ -15,14 +15,14 @@ func CreateQues(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error reading request body",
 			http.StatusInternalServerError)
 	}
-
-	b, err := json.Marshal(service.CreateQuestion(body))
+	response, err := service.CreateQuestion(body)
+	if err != nil {
+		fmt.Fprintln(w, "Error while creating question ", err)
+	}
+	b, err := json.Marshal(response)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	fmt.Fprintln(w, string(b))
-
-	// fmt.Fprintln(w, "response is = ", service.CreateQuestion(body))
-
 }

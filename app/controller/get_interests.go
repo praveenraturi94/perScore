@@ -8,17 +8,16 @@ import (
 	"perScore/app/service"
 )
 
-// GetQues ...
-func GetQues(w http.ResponseWriter, r *http.Request) {
-
+// GetInterests ...
+func GetInterests(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Error reading request body",
 			http.StatusInternalServerError)
 	}
-	response, err := service.GetQuestion(body)
+	response, err := service.GetInterest(body)
 	if err != nil {
-		fmt.Fprintln(w, "Error while fetching questions", err)
+		fmt.Fprintln(w, "Error while creating question ", err)
 	}
 	b, err := json.Marshal(response)
 	if err != nil {

@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -9,31 +10,18 @@ import (
 
 //Login ...
 func Login(w http.ResponseWriter, r *http.Request) {
-	// db, err := gorm.Open("mysql", "root:root@/library?charset=utf8&parseTime=True&loc=Local")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Error reading request body",
 			http.StatusInternalServerError)
 	}
-
-	// b, err := json.Marshal(service.Login(body))
-	// if err != nil {
-	// 	fmt.Fprintln(w, err)
-	// }
-	token := service.Login(body)
-	fmt.Println(token)
-	fmt.Fprintln(w, "response is = ", token)
-	//post request with json in body using struct
-	// var s = new(&Person)
-	// person := new(model.Person)
-	// json.Unmarshal([]byte(body), person)
-	// err1 := db.Where("email = ?", person.Email).First(&person)
-	// if err1.RecordNotFound() == true {
-	// 	fmt.Fprintln(w, "record not found")
-	// } else {
-	// 	fmt.Fprintln(w, "record found")
-	// }
+	resp, err := service.Login(body)
+	if err != nil {
+		fmt.Fprintln(w, "Error creating users = ", err)
+	}
+	b, err := json.Marshal(resp)
+	if err != nil {
+		fmt.Fprintln(w, err)
+	}
+	fmt.Fprintln(w, string(b))
 }

@@ -5,7 +5,7 @@ package question;
 service Question {
   // Create a new question
   rpc CreateQuestion (CreateQuestionRequest) returns (CreateQuestionResponse) {}
-  // Get a question
+  // Get next question
   rpc GetQuestion (GetQuestionRequest) returns (GetQuestionResponse) {}
 }
 
