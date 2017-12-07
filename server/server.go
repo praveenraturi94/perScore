@@ -9,7 +9,7 @@ import (
 
 // Startserver ...
 func Startserver() {
-	fmt.Println("server started")
-	routes.Router()
-	http.ListenAndServe(os.Getenv("PORT"), nil)
+	fmt.Println("perScore server started")
+	handler := routes.Router()
+	http.ListenAndServe(os.Getenv("PORT"), handler)
 }
