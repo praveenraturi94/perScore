@@ -5,17 +5,19 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"perScore/app/service"
+	"perScoreServer/app/service"
 )
 
-// CreateQues ...
-func CreateQues(w http.ResponseWriter, r *http.Request) {
+// CreateQuestion ...
+func CreateQuestion(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Error reading request body",
 			http.StatusInternalServerError)
 	}
-	response, err := service.CreateQuestion(body)
+	session, _ := store.Get(r, "session")
+	email := session.Values["email"].(string)
+	response, err := service.CreateQuestion(body, email)
 	if err != nil {
 		fmt.Fprintln(w, "Error while creating question ", err)
 	}

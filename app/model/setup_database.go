@@ -1,19 +1,16 @@
 package model
 
 import (
-	// _ "github.com/go-sql-driver/mysql"
-
 	"fmt"
-	"perScore/app/shared"
 
-	_ "github.com/jinzhu/gorm/dialects/mysql" // ...
+	"github.com/jinzhu/gorm"
 )
 
 //SetupDatabase ...
-func SetupDatabase() error {
+func SetupDatabase(db *gorm.DB) error {
 	fmt.Println("migration")
 
-	err := shared.DBCon.AutoMigrate(
+	err := db.AutoMigrate(
 		&Token{},
 	).Error
 	return err

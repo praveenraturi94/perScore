@@ -2,7 +2,7 @@ package routes
 
 import (
 	"net/http"
-	"perScore/app/controller"
+	"perScoreServer/app/controller"
 
 	"github.com/rs/cors"
 )
@@ -12,11 +12,9 @@ func Router() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/login", controller.Login)
 	mux.HandleFunc("/register", controller.Register)
-	mux.HandleFunc("/create_question", controller.CreateQues)
-	mux.HandleFunc("/get_question", controller.GetQues)
+	mux.HandleFunc("/create_question", controller.CreateQuestion)
+	mux.HandleFunc("/get_question", controller.GetQuestion)
 	mux.HandleFunc("/approve_entries", controller.ApproveEntries)
-	mux.HandleFunc("/get_entries", controller.GetEntries)
-	mux.HandleFunc("/get_interests", controller.GetInterests)
 
 	// cors.Default() setup the middleware with default options being
 	// all origins accepted with simple methods (GET, POST). See

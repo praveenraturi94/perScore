@@ -1,7 +1,7 @@
 package service_test
 
 import (
-	"perScore/app/service"
+	"perScoreServer/app/service"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"perScore/app/service"
+	"perScoreServer/app/service"
 )
 
 // ApproveEntries ...
@@ -15,14 +15,20 @@ func ApproveEntries(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error reading request body",
 			http.StatusInternalServerError)
 	}
-	response, err := service.ApproveEntrie(body)
+	fmt.Println("response...................", string(body[:]))
+	// session, _ := store.Get(r, "session")
+	// email := session.Values["email"].(string)
+	// fmt.Println("email", email)
+	response, err := service.ApproveEntrie(body, "aasthakhanduja28@gmail.com")
 	if err != nil {
 		fmt.Fprintln(w, "Error while creating question ", err)
 	}
-	b, err := json.Marshal(response)
-	if err != nil {
-		fmt.Println(err)
-		return
+	if err = json.NewEncoder(w).Encode(response); err != nil {
+		panic(err)
 	}
-	fmt.Fprintln(w, string(b))
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+	// fmt.Fprintln(w, string(b))
 }

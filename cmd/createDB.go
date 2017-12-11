@@ -15,14 +15,13 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
+	"os"
 
-	"perScore/app/model"
-	"perScore/app/shared"
+	"perScoreServer/app/model"
 
-	// _ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql" // ...
 	"github.com/spf13/cobra"
 )
 
@@ -38,19 +37,13 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
-		db1, err1 := gorm.Open("mysql", "root:root@/?charset=utf8&parseTime=True&loc=Local")
-		defer db1.Close()
-
-		if err1 != nil {
-			log.Fatal(err1)
-		}
-		db1.Exec("CREATE DATABASE IF NOT EXISTS library DEFAULT CHARACTER SET = 'utf8' DEFAULT COLLATE 'utf8_general_ci'")
-		shared.DBCon, err = gorm.Open("mysql", "root:root@/library?charset=utf8&parseTime=True&loc=Local")
+		dbString := fmt.Sprintf("host=%s dbname=%s user=%s password=%s sslmode=%s", os.Getenv("DEV_HOST"), os.Getenv("DEV_DBNAME"), os.Getenv("DEV_USERNAME"), os.Getenv("DEV_PASSWORD"), os.Getenv("DEV_SSLMODE"))
+		db, err := gorm.Open(os.Getenv("DEV_DB_DRIVER"), dbString)
+		defer db.Close()
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer shared.DBCon.Close()
-		model.SetupDatabase()
+		model.SetupDatabase(db)
 	},
 }
 

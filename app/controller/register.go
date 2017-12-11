@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"perScore/app/service"
+	"perScoreServer/app/service"
 )
 
 //Register ...
@@ -20,9 +20,8 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Fprintln(w, "Error creating users = ", err)
 	}
-	b, err := json.Marshal(resp)
-	if err != nil {
-		fmt.Fprintln(w, err)
+
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		panic(err)
 	}
-	fmt.Fprintln(w, string(b))
 }

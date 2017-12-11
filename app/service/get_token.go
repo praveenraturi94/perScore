@@ -1,16 +1,22 @@
 package service
 
 import (
-		"github.com/jinzhu/gorm"
-		"log"
-		"perScore/app/model"
+	"fmt"
+	"log"
+	"os"
+	"perScoreServer/app/model"
+
+	"github.com/jinzhu/gorm"
 )
+
 // GetToken ...
 func GetToken(email string) string {
 
-	db, err := gorm.Open("mysql", "root:root@/library?charset=utf8&parseTime=True&loc=Local")
+	dbString := fmt.Sprintf("host=%s dbname=%s user=%s password=%s sslmode=%s", os.Getenv("DEV_HOST"), os.Getenv("DEV_DBNAME"), os.Getenv("DEV_USERNAME"), os.Getenv("DEV_PASSWORD"), os.Getenv("DEV_SSLMODE"))
+	db, err := gorm.Open(os.Getenv("DEV_DB_DRIVER"), dbString)
+	defer db.Close()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to create db connection: %v", err)
 	}
 	token := new(model.Token)
 	err1 := db.Where("email = ?", email).First(&token)

@@ -3,19 +3,22 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
-	pb "perScore/perScoreProto/usersDetails"
+	pb "perScoreServer/perScoreProto/perScoreCal/user"
 
 	"google.golang.org/grpc"
 )
 
 // ApproveEntrie ...
-func ApproveEntrie(body []byte) (*pb.ApproveEntriesResponse, error) {
+func ApproveEntrie(body []byte, email string) (*pb.ApproveEntriesResponse, error) {
+	fmt.Println("##############################################################")
 	ctx := context.Background()
 	entries := new(pb.ApproveEntriesRequest)
 	json.Unmarshal([]byte(body), entries)
-
+	entries.AuthToken = GetToken(email)
+	fmt.Println("entries", entries)
 	conn, err := grpc.Dial(os.Getenv("PER_SCORE_CALC_SERVICE_DIAL"), grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Failed to dial gRPC connection: %v", err)

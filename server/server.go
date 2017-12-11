@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"perScore/app/routes"
+	"perScoreServer/app/routes"
 )
 
 // Startserver ...
 func Startserver() {
-	fmt.Println("perScore server started")
+	fmt.Println("perScore server started on", os.Getenv("PORT"))
 	handler := routes.Router()
 	http.ListenAndServe(os.Getenv("PORT"), handler)
 }

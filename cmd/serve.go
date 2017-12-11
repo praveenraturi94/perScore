@@ -15,7 +15,7 @@
 package cmd
 
 import (
-	"perScore/server"
+	"perScoreServer/server"
 
 	"github.com/spf13/cobra"
 )

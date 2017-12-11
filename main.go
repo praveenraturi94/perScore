@@ -14,7 +14,7 @@
 
 package main
 
-import "perScore/cmd"
+import "perScoreServer/cmd"
 
 func main() {
 	cmd.Execute()

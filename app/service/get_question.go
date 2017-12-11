@@ -3,26 +3,27 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
-	"perScore/perScoreProto/question"
+	pb "perScoreServer/perScoreProto/perScoreCal/question"
 
 	"google.golang.org/grpc"
 )
 
 // GetQuestion ...
-func GetQuestion(body []byte) (*question.GetQuestionResponse, error) {
+func GetQuestion(body []byte, email string) (*pb.GetQuestionResponse, error) {
 	ctx := context.Background()
 	conn, err := grpc.Dial(os.Getenv("PER_SCORE_CALC_SERVICE_DIAL"), grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Failed to dial gRPC connection: %v", err)
 	}
 	defer conn.Close()
-
-	requestQues := new(question.GetQuestionRequest)
-	json.Unmarshal([]byte(body), requestQues)
-	requestQues.AuthToken = GetToken("praveenraturi3@yahoo.com")
-	questionClientConnection := question.NewQuestionClient(conn)
+	requestQues := new(pb.GetQuestionRequest)
+	json.Unmarshal(body, requestQues)
+	fmt.Println("requestQues", requestQues)
+	requestQues.AuthToken = GetToken(email)
+	questionClientConnection := pb.NewQuestionClient(conn)
 
 	response, err := questionClientConnection.GetQuestion(ctx, requestQues)
 	return response, err

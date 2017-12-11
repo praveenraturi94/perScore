@@ -5,18 +5,20 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"perScore/app/service"
+	"perScoreServer/app/service"
 )
 
-// GetQues ...
-func GetQues(w http.ResponseWriter, r *http.Request) {
-
+// GetQuestion ...
+func GetQuestion(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("request", r)
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Error reading request body",
 			http.StatusInternalServerError)
 	}
-	response, err := service.GetQuestion(body)
+	session, _ := store.Get(r, "session")
+	email := session.Values["email"].(string)
+	response, err := service.GetQuestion(body, email)
 	if err != nil {
 		fmt.Fprintln(w, "Error while fetching questions", err)
 	}

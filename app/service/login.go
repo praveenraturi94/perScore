@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"perScore/app/model"
-	"perScore/perScoreProto/user"
+	"perScoreServer/app/model"
+	pb "perScoreServer/perScoreProto/user"
 	"strconv"
 	"strings"
 
@@ -19,51 +19,32 @@ import (
 )
 
 // Login ...
-func Login(body []byte) (*user.GetSessionResponse, error) {
-	userDetails := new(user.GetSessionRequest)
+func Login(body []byte) (map[string]string, *pb.GetSessionResponse, error) {
+	var mappedResult map[string]string
+	userDetails := new(pb.GetSessionRequest)
 	json.Unmarshal([]byte(body), userDetails)
+	result := Decrypt([]byte(os.Getenv("DECRYPT_KEY")), GetToken(userDetails.GetEmail()))
+	userDetails.Role = result["role"]
 	fmt.Println("userDetails", userDetails)
 	conn, err := grpc.Dial(os.Getenv("PER_SCORE_AUTH_SERVICE_DIAL"), grpc.WithInsecure())
+	defer conn.Close()
 	if err != nil {
 		log.Fatalf("Failed to dial gRPC connection: %v", err)
 	}
 
-	defer conn.Close()
 	ctx := context.Background()
-	fmt.Println("conn")
-	loginUserClientConnection := user.NewUserClient(conn)
-	fmt.Println(loginUserClientConnection)
+	loginUserClientConnection := pb.NewUserClient(conn)
 	response, err := loginUserClientConnection.GetSession(ctx, userDetails)
-	fmt.Println(response)
-	token := Decrypt([]byte(os.Getenv("DECRYPT_KEY")), response.Token)
-	saveToken(token, response.Token)
-	return response, err
-}
-
-func saveToken(token string, uid string) {
-	s := strings.Split(token, ",")
-	email := s[0]
-	exprationTime, _ := strconv.Atoi(s[1])
-
-	genToken := new(model.Token)
-	genToken.Token = uid
-	genToken.ExpirationTime = exprationTime
-	genToken.Email = email
-
-	db, err := gorm.Open("mysql", "root:root@/library?charset=utf8&parseTime=True&loc=Local")
-	if err != nil {
-		log.Fatal(err)
+	fmt.Println("perScoreAuth Response:", response)
+	if response.Status == "SUCCESS" {
+		mappedResult = Decrypt([]byte(os.Getenv("DECRYPT_KEY")), response.Token)
 	}
-	err = db.Create(&genToken).Error
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-
+	return mappedResult, response, err
 }
 
 // Decrypt ...
-func Decrypt(key []byte, cryptoText string) string {
+func Decrypt(key []byte, cryptoText string) map[string]string {
+	mappedResult := make(map[string]string)
 	ciphertext, _ := base64.URLEncoding.DecodeString(cryptoText)
 
 	block, err := aes.NewCipher(key)
@@ -77,12 +58,41 @@ func Decrypt(key []byte, cryptoText string) string {
 		panic("ciphertext too short")
 	}
 	iv := ciphertext[:aes.BlockSize]
-	ciphertext = ciphertext[aes.BlockSize:]
+	dataByte := ciphertext[aes.BlockSize:]
 
 	stream := cipher.NewCFBDecrypter(block, iv)
 
 	// XORKeyStream can work in-place if the two arguments are the same.
 	stream.XORKeyStream(ciphertext, ciphertext)
 
-	return fmt.Sprintf("%s", ciphertext)
+	dataArray := strings.Split(fmt.Sprintf("%s", dataByte), ",")
+
+	mappedResult["email"] = dataArray[0]
+	mappedResult["role"] = dataArray[1]
+	mappedResult["sessionTime"] = dataArray[2]
+
+	saveToken(mappedResult, cryptoText)
+
+	return mappedResult
+}
+
+func saveToken(mappedResult map[string]string, uid string) {
+	sessionTime, _ := strconv.Atoi(mappedResult["sessionTime"])
+
+	genToken := new(model.Token)
+	genToken.Token = uid
+	genToken.ExpirationTime = sessionTime
+	genToken.Email = mappedResult["email"]
+
+	dbString := fmt.Sprintf("host=%s dbname=%s user=%s password=%s sslmode=%s",
+		os.Getenv("DEV_HOST"), os.Getenv("DEV_DBNAME"), os.Getenv("DEV_USERNAME"), os.Getenv("DEV_PASSWORD"), os.Getenv("DEV_SSLMODE"))
+	db, err := gorm.Open(os.Getenv("DEV_DB_DRIVER"), dbString)
+	defer db.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = db.Create(&genToken).Error
+	if err != nil {
+		log.Fatal(err)
+	}
 }

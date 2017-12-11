@@ -5,23 +5,50 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"perScore/app/service"
+	"perScoreServer/app/service"
+
+	"github.com/gorilla/sessions"
+	log "github.com/sirupsen/logrus"
 )
+
+var store = sessions.NewCookieStore([]byte("something-very-secret"))
 
 //Login ...
 func Login(w http.ResponseWriter, r *http.Request) {
-	body, err := ioutil.ReadAll(r.Body)
+	fmt.Println("Request:", r)
+	params, err := ioutil.ReadAll(r.Body)
+
 	if err != nil {
 		http.Error(w, "Error reading request body",
 			http.StatusInternalServerError)
+	} else {
+		fmt.Println("Params:", params)
 	}
-	resp, err := service.Login(body)
+
+	mappedResult, loginResponse, err := service.Login(params)
+
+	session, _ := store.Get(r, "session")
+	// Set some session values.
+	session.Values["email"] = mappedResult["email"]
+	// Save it before we write to the response/return from the handler.
+	session.Save(r, w)
+
+	received := false
 	if err != nil {
-		fmt.Fprintln(w, "Error creating users = ", err)
+		log.Errorf("Error in login: %v", err)
+	} else {
+		fmt.Println("Token", loginResponse.Token)
+		response, _ := service.GetEntries(loginResponse.Token)
+		fmt.Println("response", response)
+		if err = json.NewEncoder(w).Encode(response); err != nil {
+			panic(err)
+		}
+		received = true
 	}
-	b, err := json.Marshal(resp)
-	if err != nil {
-		fmt.Fprintln(w, err)
+
+	if received == false {
+		if err = json.NewEncoder(w).Encode(loginResponse); err != nil {
+			panic(err)
+		}
 	}
-	fmt.Fprintln(w, string(b))
 }
