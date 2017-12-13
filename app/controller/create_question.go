@@ -15,9 +15,7 @@ func CreateQuestion(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error reading request body",
 			http.StatusInternalServerError)
 	}
-	session, _ := store.Get(r, "session")
-	email := session.Values["email"].(string)
-	response, err := service.CreateQuestion(body, email)
+	response, err := service.CreateQuestion(body)
 	if err != nil {
 		fmt.Fprintln(w, "Error while creating question ", err)
 	}

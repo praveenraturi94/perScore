@@ -13,6 +13,11 @@ import (
 
 var store = sessions.NewCookieStore([]byte("something-very-secret"))
 
+type LoginResponse struct {
+	Response *pb.GetEntriesResponse
+	Token    string
+}
+
 //Login ...
 func Login(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Request:", r)
@@ -39,8 +44,11 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	} else {
 		fmt.Println("Token", loginResponse.Token)
 		response, _ := service.GetEntries(loginResponse.Token)
+		responseLogin := new(LoginResponse)
+		responseLogin.Response = response
+		responseLogin.Token = loginResponse.Token
 		fmt.Println("response", response)
-		if err = json.NewEncoder(w).Encode(response); err != nil {
+		if err = json.NewEncoder(w).Encode(responseLogin); err != nil {
 			panic(err)
 		}
 		received = true
