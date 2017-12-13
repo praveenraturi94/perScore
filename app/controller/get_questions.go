@@ -16,9 +16,7 @@ func GetQuestion(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error reading request body",
 			http.StatusInternalServerError)
 	}
-	session, _ := store.Get(r, "session")
-	email := session.Values["email"].(string)
-	response, err := service.GetQuestion(body, email)
+	response, err := service.GetQuestion(body)
 	if err != nil {
 		fmt.Fprintln(w, "Error while fetching questions", err)
 	}

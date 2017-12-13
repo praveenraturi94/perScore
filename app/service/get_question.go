@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 	pb "perScoreServer/perScoreProto/perScoreCal/question"
@@ -12,7 +11,7 @@ import (
 )
 
 // GetQuestion ...
-func GetQuestion(body []byte, email string) (*pb.GetQuestionResponse, error) {
+func GetQuestion(body []byte) (*pb.GetQuestionResponse, error) {
 	ctx := context.Background()
 	conn, err := grpc.Dial(os.Getenv("PER_SCORE_CALC_SERVICE_DIAL"), grpc.WithInsecure())
 	if err != nil {
@@ -21,8 +20,6 @@ func GetQuestion(body []byte, email string) (*pb.GetQuestionResponse, error) {
 	defer conn.Close()
 	requestQues := new(pb.GetQuestionRequest)
 	json.Unmarshal(body, requestQues)
-	fmt.Println("requestQues", requestQues)
-	requestQues.AuthToken = GetToken(email)
 	questionClientConnection := pb.NewQuestionClient(conn)
 
 	response, err := questionClientConnection.GetQuestion(ctx, requestQues)
