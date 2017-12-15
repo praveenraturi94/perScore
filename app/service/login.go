@@ -19,13 +19,9 @@ import (
 )
 
 // Login ...
-func Login(body []byte) (map[string]string, *pb.GetSessionResponse, error) {
-	var mappedResult map[string]string
+func Login(body []byte) (*pb.GetSessionResponse, error) {
 	userDetails := new(pb.GetSessionRequest)
 	json.Unmarshal([]byte(body), userDetails)
-	result := Decrypt([]byte(os.Getenv("DECRYPT_KEY")), GetToken(userDetails.GetEmail()))
-	userDetails.Role = result["role"]
-	fmt.Println("userDetails", userDetails)
 	conn, err := grpc.Dial(os.Getenv("PER_SCORE_AUTH_SERVICE_DIAL"), grpc.WithInsecure())
 	defer conn.Close()
 	if err != nil {
@@ -36,10 +32,7 @@ func Login(body []byte) (map[string]string, *pb.GetSessionResponse, error) {
 	loginUserClientConnection := pb.NewUserClient(conn)
 	response, err := loginUserClientConnection.GetSession(ctx, userDetails)
 	fmt.Println("perScoreAuth Response:", response)
-	if response.Status == "SUCCESS" {
-		mappedResult = Decrypt([]byte(os.Getenv("DECRYPT_KEY")), response.Token)
-	}
-	return mappedResult, response, err
+	return response, err
 }
 
 // Decrypt ...

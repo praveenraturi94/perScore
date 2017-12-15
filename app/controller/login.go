@@ -6,13 +6,12 @@ import (
 	"io/ioutil"
 	"net/http"
 	"perScoreServer/app/service"
+	pb "perScoreServer/perScoreProto/perScoreCal/user"
 
-	"github.com/gorilla/sessions"
 	log "github.com/sirupsen/logrus"
 )
 
-var store = sessions.NewCookieStore([]byte("something-very-secret"))
-
+// LoginResponse ...
 type LoginResponse struct {
 	Response *pb.GetEntriesResponse
 	Token    string
@@ -30,16 +29,10 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Params:", params)
 	}
 
-	mappedResult, loginResponse, err := service.Login(params)
-
-	session, _ := store.Get(r, "session")
-	// Set some session values.
-	session.Values["email"] = mappedResult["email"]
-	// Save it before we write to the response/return from the handler.
-	session.Save(r, w)
+	loginResponse, err := service.Login(params)
 
 	received := false
-	if err != nil {
+	if loginResponse.Status == "FAILURE" {
 		log.Errorf("Error in login: %v", err)
 	} else {
 		fmt.Println("Token", loginResponse.Token)
@@ -47,7 +40,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		responseLogin := new(LoginResponse)
 		responseLogin.Response = response
 		responseLogin.Token = loginResponse.Token
-		fmt.Println("response", response)
+		fmt.Println("response", responseLogin)
 		if err = json.NewEncoder(w).Encode(responseLogin); err != nil {
 			panic(err)
 		}

@@ -12,12 +12,10 @@ import (
 )
 
 // ApproveEntrie ...
-func ApproveEntrie(body []byte, email string) (*pb.ApproveEntriesResponse, error) {
-	fmt.Println("##############################################################")
+func ApproveEntrie(body []byte) (*pb.ApproveEntriesResponse, error) {
 	ctx := context.Background()
 	entries := new(pb.ApproveEntriesRequest)
 	json.Unmarshal([]byte(body), entries)
-	entries.AuthToken = GetToken(email)
 	fmt.Println("entries", entries)
 	conn, err := grpc.Dial(os.Getenv("PER_SCORE_CALC_SERVICE_DIAL"), grpc.WithInsecure())
 	if err != nil {

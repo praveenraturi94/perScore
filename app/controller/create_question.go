@@ -15,14 +15,11 @@ func CreateQuestion(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error reading request body",
 			http.StatusInternalServerError)
 	}
-	response, err := service.CreateQuestion(body)
-	if err != nil {
-		fmt.Fprintln(w, "Error while creating question ", err)
+	// Calling perScoreCal RPC
+	response, _ := service.CreateQuestion(body)
+
+	fmt.Println("CreateQuestion Response:", response)
+	if err = json.NewEncoder(w).Encode(response); err != nil {
+		panic(err)
 	}
-	b, err := json.Marshal(response)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Fprintln(w, string(b))
 }

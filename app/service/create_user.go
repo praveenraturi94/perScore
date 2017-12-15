@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 	pb "perScoreServer/perScoreProto/user"
@@ -22,11 +21,7 @@ func CreateUser(request []byte) (*pb.CreateUserResponse, error) {
 
 	newUser := new(pb.CreateUserRequest)
 	json.Unmarshal([]byte(request), newUser)
-	fmt.Println("Request = ", string(request))
-	fmt.Println("User = ", *newUser)
-	fmt.Println("Location = ", *newUser.Location)
 	clientConnection := pb.NewUserClient(conn)
 	response, err := clientConnection.CreateUser(ctx, newUser)
-	fmt.Println("Response = ", response)
 	return response, err
 }

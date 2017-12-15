@@ -20,7 +20,7 @@ type Category struct {
 }
 
 // CreateQuestion ...
-func CreateQuestion(body []byte) (*pb.CreateQuestionRequest_Category, error) {
+func CreateQuestion(body []byte) (*pb.CreateQuestionResponse, error) {
 	ctx := context.Background()
 	questionRequest := new(pb.CreateQuestionRequest)
 	json.Unmarshal([]byte(body), questionRequest)
@@ -33,46 +33,43 @@ func CreateQuestion(body []byte) (*pb.CreateQuestionRequest_Category, error) {
 	questionClientConnection := pb.NewQuestionClient(conn)
 
 	response, err := questionClientConnection.CreateQuestion(ctx, questionRequest)
-	return Sorting(response), err
+	return response, err
 }
 
-var categ = new(pb.CreateQuestionRequest_Category)
-var cateTemp = new(pb.CreateQuestionResponse_Category)
+var questionResponse = new(pb.CreateQuestionResponse)
 
 // Sorting ...
-func Sorting(response *pb.CreateQuestionResponse) *pb.CreateQuestionRequest_Category {
-	categories := response.Categories
-	for _, category := range categories {
+func Sorting(response *pb.CreateQuestionResponse) *pb.CreateQuestionResponse {
+	for _, category := range response.Categories {
 		level := category.GetLevel()
 		if level == 1 {
-			var categorey = new(pb.CreateQuestionRequest_Category)
-			categorey.Id = category.GetId()
-			categorey.Name = category.GetName()
-			categorey.Parent = category.GetParent()
-			categ.Categories = append(categ.Categories, categorey)
+			var responseCategory = new(pb.CreateQuestionResponse_Category)
+			responseCategory.Id = category.GetId()
+			responseCategory.Name = category.GetName()
+			responseCategory.Parent = category.GetParent()
+			questionResponse.Categories = append(questionResponse.Categories, responseCategory)
 		}
 	}
 	for {
-		for i, category := range categories {
-			for _, cate := range categ.Categories {
-				if category.GetParent() == cate.GetId() {
-					var categorey = new(pb.CreateQuestionRequest_Category)
-					categorey.Id = category.GetId()
-					categorey.Name = category.GetName()
-					categorey.Parent = category.GetParent()
-					cate.Categories = append(cate.Categories, categorey)
-
+		for i, category := range response.Categories {
+			for _, questionResponseCategory := range questionResponse.Categories {
+				if category.GetParent() == questionResponseCategory.GetId() {
+					var responseCategory = new(pb.CreateQuestionResponse_Category)
+					responseCategory.Id = category.GetId()
+					responseCategory.Name = category.GetName()
+					responseCategory.Parent = category.GetParent()
+					questionResponse.Categories = append(questionResponse.Categories, responseCategory)
 				}
 			}
-			if i >= len(categories) {
+			if i >= len(response.Categories) {
 				break
 			} else {
-				categories = append(categories[:i], categories[i+1:]...)
+				response.Categories = append(response.Categories[:i], response.Categories[i+1:]...)
 			}
 		}
-		if len(categories) == 0 {
+		if len(response.Categories) == 0 {
 			break
 		}
 	}
-	return categ
+	return questionResponse
 }

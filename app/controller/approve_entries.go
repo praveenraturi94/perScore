@@ -15,11 +15,7 @@ func ApproveEntries(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error reading request body",
 			http.StatusInternalServerError)
 	}
-	fmt.Println("response...................", string(body[:]))
-	// session, _ := store.Get(r, "session")
-	// email := session.Values["email"].(string)
-	// fmt.Println("email", email)
-	response, err := service.ApproveEntrie(body, "aasthakhanduja28@gmail.com")
+	response, err := service.ApproveEntrie(body)
 	if err != nil {
 		fmt.Fprintln(w, "Error while creating question ", err)
 	}
