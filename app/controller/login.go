@@ -6,14 +6,21 @@ import (
 	"io/ioutil"
 	"net/http"
 	"perScoreServer/app/service"
-	pb "perScoreServer/perScoreProto/perScoreCal/user"
+	pbc "perScoreServer/perScoreProto/perScoreCal/user"
+	pba "perScoreServer/perScoreProto/user"
 
 	log "github.com/sirupsen/logrus"
 )
 
 // LoginResponse ...
 type LoginResponse struct {
-	Response *pb.GetEntriesResponse
+	Response *pba.GetSessionResponse
+	Token    string
+}
+
+// GetEntriesResponse ...
+type GetEntriesResponse struct {
+	Response *pbc.GetEntriesResponse
 	Token    string
 }
 
@@ -29,26 +36,25 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Params:", params)
 	}
 
-	loginResponse, err := service.Login(params)
-
-	received := false
-	if loginResponse.Status == "FAILURE" {
+	response, err := service.Login(params)
+	if err != nil {
 		log.Errorf("Error in login: %v", err)
-	} else {
-		fmt.Println("Token", loginResponse.Token)
-		response, _ := service.GetEntries(loginResponse.Token)
-		responseLogin := new(LoginResponse)
-		responseLogin.Response = response
-		responseLogin.Token = loginResponse.Token
-		fmt.Println("response", responseLogin)
-		if err = json.NewEncoder(w).Encode(responseLogin); err != nil {
+	}
+	token := response.Token
+
+	if response.Status == "FAILURE" {
+		loginResponse := new(LoginResponse)
+		loginResponse.Response = response
+		if err = json.NewEncoder(w).Encode(loginResponse); err != nil {
 			panic(err)
 		}
-		received = true
-	}
-
-	if received == false {
-		if err = json.NewEncoder(w).Encode(loginResponse); err != nil {
+	} else {
+		responseGetEntries, _ := service.GetEntries(token)
+		getEntriesResponse := new(GetEntriesResponse)
+		getEntriesResponse.Response = responseGetEntries
+		getEntriesResponse.Token = token
+		fmt.Println("GetEntries Response:", getEntriesResponse)
+		if err = json.NewEncoder(w).Encode(getEntriesResponse); err != nil {
 			panic(err)
 		}
 	}

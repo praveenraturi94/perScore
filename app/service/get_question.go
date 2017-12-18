@@ -18,10 +18,10 @@ func GetQuestion(body []byte) (*pb.GetQuestionResponse, error) {
 		log.Fatalf("Failed to dial gRPC connection: %v", err)
 	}
 	defer conn.Close()
-	requestQues := new(pb.GetQuestionRequest)
-	json.Unmarshal(body, requestQues)
+	getQuestionRequest := new(pb.GetQuestionRequest)
+	json.Unmarshal(body, getQuestionRequest)
 	questionClientConnection := pb.NewQuestionClient(conn)
 
-	response, err := questionClientConnection.GetQuestion(ctx, requestQues)
+	response, err := questionClientConnection.GetQuestion(ctx, getQuestionRequest)
 	return response, err
 }
